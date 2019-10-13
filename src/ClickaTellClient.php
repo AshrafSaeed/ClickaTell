@@ -2,113 +2,93 @@
 
 namespace AshrafSaeed\ClickaTell;
 
-use AshrafSaeed\MessageBird\Common\HttpClient;
+use AshrafSaeed\ClickaTell\Resources\RestApi;
 
-class ClickaTell {
+class ClickaTellClient implements ClickaTellClientInterface {
 
-    public $access_key;
-    public $body;
-    public $originator;
-    public $recipients;
+    private $access_key;
+    private $msgbody;
+    private $recipients;
 
     /**
      *
      */
     public function __construct($access_key) {
 
-        $this->access_key = $access_key;
-        
-    }
-    
-    /**
-     *
-     */
-    public function setBody($body) {
-
-        $this->body = trim($body);
-        return $this;
+        $this->access_key = $access_key;        
     
     }
 
     /**
      *
      */
-    public function setOriginator($originator) {
+    public function setMsgBody($msgbody) {
     
-        $this->originator = $originator;
-    
-        return $this;
-    
-    }
-
-    /**
-     *
-     */
-    public function setRecipients($recipients) {
-
-        if (is_array($recipients)) {
-            $recipients = implode(',', $recipients);
-        }
-        
-        $this->recipients = $recipients;
-        
-        return $this;
+        $this->msgbody = $msgbody;        
 
     }
 
     /**
      *
      */
-    public function setDatacoding($datacoding) {
- 
-        $this->datacoding = $datacoding;
-        return $this;
- 
+    public function setRecipients(array $recipients) {
+    
+        $this->recipients = $recipients;        
+
     }
-        
+
     /**
      *
      */
-    public function toJson() {
+    public function getMsgBody() {
+    
+        return $this->msgbody;
 
-        return json_encode($this);
-    
     }
-    
+
     /**
      *
      */
-    public function sendTo( $recipients = [], $body, $originator ) {
+    public function getRecipients() {
 
-        $this->setOriginator($originator);
+        return $this->recipients;
+    
+    }
+
+
+    /**
+     *
+     */
+    public function sendMessage( array $recipients, $msgbody ) {
+
+        $this->setMsgBody($msgbody);
         $this->setRecipients($recipients);
-        $this->setBody($body);        
-        $this->setDatacoding('auto');
-
-        $objHttpClient = new HttpClient($this->access_key);
-
-        return $objHttpClient->httpRequest('https://rest.messagebird.com/messages', $this->toJson());
+    
+        return $this->createMessage();
 
     }
 
     /**
      *
      */
-    public function getBalance() {
+    public function createMessage() {
 
-        $objHttpClient = new HttpClient($this->access_key);
-        return $objHttpClient->httpRequest('https://rest.messagebird.com/balance', json_encode([]));
+        try {
     
-    }
+            $clickatell = new RestApi($this->access_key);
 
-    /**
-     *
-     */
-    public function sendHlr($msisdn = NULL)
-    {
-        $objHttpClient = new HttpClient($this->access_key);
-        return $objHttpClient->httpRequest('https://rest.messagebird.com/hlr', json_encode(['msisdn' => $msisdn]));
-    
+            $result = $clickatell->sendMessage(
+                ['to' => $this->getRecipients(), 'content' => $this->getMsgBody()]
+            );
+
+            return json_encode($result);
+
+        } catch (Exception $e) {
+
+            return json_encode($e->getMessage());
+
+        }
+
     }
 
 }

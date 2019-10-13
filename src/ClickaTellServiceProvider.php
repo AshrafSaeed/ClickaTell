@@ -8,7 +8,7 @@ use Illuminate\Support\ServiceProvider;
 
 use AshrafSaeed\ClickaTell\ClickaTellClient;
 
-class ClickaTellProvider extends ServiceProvider
+class ClickaTellServiceProvider extends ServiceProvider
 {
     /**
      * creating registration of textmessage in booting of servicesprovider.
@@ -42,3 +42,4 @@ class ClickaTellProvider extends ServiceProvider
     }
 
 }
+
